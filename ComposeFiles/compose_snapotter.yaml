@@ -1,0 +1,9 @@
+services:
+  snapotter:
+    container_name: SnapOtter
+    ports:
+      - 1349:1349
+    volumes:
+      - ./snapotter:/data
+    image: snapotter/snapotter:latest
+networks: {}

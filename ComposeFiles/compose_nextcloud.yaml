@@ -1,0 +1,21 @@
+services:
+  nextcloud-aio-mastercontainer:
+    image: ghcr.io/nextcloud-releases/all-in-one:latest
+    init: true
+    restart: always
+    container_name: nextcloud-aio-mastercontainer
+    volumes:
+      - nextcloud_aio_mastercontainer:/mnt/docker-aio-config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    network_mode: bridge
+    ports:
+      - 8081:8080
+    environment:
+      APACHE_PORT: 11500
+      APACHE_IP_BINDING: 0.0.0.0
+      NEXTCLOUD_MOUNT: /hdd/data/documents
+      NEXTCLOUD_ENABLE_DRI_DEVICE: true
+volumes:
+  nextcloud_aio_mastercontainer:
+    name: nextcloud_aio_mastercontainer
+networks: {}

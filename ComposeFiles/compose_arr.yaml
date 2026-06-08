@@ -1,0 +1,161 @@
+services:
+  qbittorrent:
+    container_name: qbittorrent
+    image: ghcr.io/hotio/qbittorrent
+    environment:
+      - TZ=Etc/UTC
+      - WEBUI_PORTS=8080/tcp,8080/udp
+      - LIBTORRENT=v1
+    ports:
+      - 8080:8080 # qBittorrent Web UI port
+      - 5881:5881/tcp # qBittorrent TCP torrent port
+      - 5881:5881/udp # qBittorrent UDP torrent port
+    volumes:
+      - /opt/stacks/arr/qbittorrent/config:/config
+      - /hdd/data:/data
+    restart: unless-stopped
+  qbittorrent-exporter:
+    image: caseyscarborough/qbittorrent-exporter:latest
+    container_name: qbittorrent-exporter
+    ports:
+      - 17871:17871 # qBit-Exporter port
+    environment:
+      QBITTORRENT_USERNAME: ${QBITTORRENT_USERNAME}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD}
+      QBITTORRENT_BASE_URL: http://qbittorrent:8080
+    restart: unless-stopped
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    devices:
+      - /dev/kfd
+      - /dev/dri
+    ports:
+      - 8096:8096/tcp
+      - 7359:7359/udp
+    volumes:
+      - /opt/stacks/arr/jellyfin/config:/config
+      - /opt/stacks/arr/jellyfin/cache:/cache
+      - type: bind
+        source: /hdd/data/media
+        target: /media
+        read_only: true
+    restart: unless-stopped
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  radarr:
+    container_name: radarr
+    image: ghcr.io/hotio/radarr
+    ports:
+      - 7878:7878 # Radarr port
+    environment:
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/stacks/arr/radarr/config:/config
+      - /hdd/data:/data
+      - /hdd/data/media/movies:/movies
+    restart: unless-stopped
+  sonarr:
+    container_name: sonarr
+    image: ghcr.io/hotio/sonarr
+    ports:
+      - 8989:8989 # Sonarr port
+    environment:
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/stacks/arr/sonarr/config:/config
+      - /hdd/data:/data
+      - /hdd/data/media/shows:/shows
+      - /hdd/data/media/animes:/animes
+    restart: unless-stopped
+  lidarr:
+    container_name: lidarr
+    image: ghcr.io/hotio/lidarr
+    ports:
+      - 8686:8686 # Lidarr port
+    environment:
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/stacks/arr/lidarr/config:/config
+      - /hdd/data:/data
+      - /hdd/data/media/music/sound:/music
+    restart: unless-stopped
+  whisparr:
+    container_name: whisparr
+    image: ghcr.io/hotio/whisparr
+    ports:
+      - 6969:6969 # Whisparr port
+    environment:
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/stacks/arr/whisparr/config:/config
+      - /hdd/data:/data
+      - /hdd/data/media/.adult:/adult
+    restart: unless-stopped
+  bazarr:
+    container_name: bazarr
+    image: ghcr.io/hotio/bazarr
+    ports:
+      - 6767:6767 # Bazarr port
+    environment:
+      - TZ=Etc/UTC
+      - WEBUI_PORTS=6767/tcp,6767/udp
+    volumes:
+      - /opt/stacks/arr/bazarr/config:/config
+      - /hdd/data:/data
+      - /hdd/data/media/shows:/shows
+      - /hdd/data/media/movies:/movies
+    restart: unless-stopped
+  shelfmark:
+    image: ghcr.io/calibrain/shelfmark-lite:latest
+    environment:
+      EXT_BYPASSER_URL: http://flaresolverr:8191
+      PUID: 0
+      PGID: 0
+    ports:
+      - 8084:8084
+    restart: unless-stopped
+    volumes:
+      - /hdd/data/media/books:/books
+      - /opt/stacks/arr/shelfmark/config:/config
+      - /hdd/data:/data
+  prowlarr:
+    container_name: prowlarr
+    image: ghcr.io/hotio/prowlarr
+    ports:
+      - 9696:9696 # Prowlarr port
+    environment:
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/stacks/arr/prowlarr/config:/config
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=Etc/UTC
+    ports:
+      - 5055:5055
+    volumes:
+      - /opt/stacks/arr/seerr/config:/app/config
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status
+        || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    restart: unless-stopped
+  mousehole:
+    image: tmmrtn/mousehole:latest
+    ports:
+      - 5010:5010 # Mousehole port
+    environment:
+      TZ: Etc/UTC
+      MOUSEHOLE_AUTH_PASSWORD: ${MOUSEHOLE_AUTH_PASSWORD}
+    volumes:
+      - mousehole:/srv/mousehole
+    restart: unless-stopped
+volumes:
+  mousehole: null
+networks: {}

@@ -1,0 +1,14 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:13
+    container_name: forgejo
+    environment: []
+    restart: always
+    volumes:
+      - ./forgejo:/data
+      - /hdd/data/repos:/data/git/repositories
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 3005:3000
+      - 222:22
+networks: {}

@@ -1,0 +1,21 @@
+services:
+  mollysocket:
+    image: ghcr.io/mollyim/mollysocket:latest
+    container_name: mollysocket
+    restart: always
+    volumes:
+      - /opt/molly/data:/data
+    working_dir: /data
+    command: server
+    environment:
+      - MOLLY_DB="/data/mollysocket.db"
+      # Do not add space in the array ["http://a.tld","*"]
+      - MOLLY_ALLOWED_ENDPOINTS=["${MOLLY_ALLOWED_ENDPOINTS}","*"]
+      - MOLLY_ALLOWED_UUIDS=["*"]
+      # TODO:
+      - MOLLY_VAPID_PRIVKEY=${MOLLY_VAPID_PRIVKEY}
+      - MOLLY_HOST=0.0.0.0
+      - MOLLY_PORT=8020
+      - RUST_LOG=info
+    ports:
+      - "8020:8020"
